@@ -207,6 +207,12 @@
             margin-bottom: 32px;
         }
         
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
         .info-banner {
             background: #eff6ff;
             border: 1px solid #bfdbfe;
@@ -219,7 +225,7 @@
         
         .breakeven-indicator {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 8px 16px;
             background: #10b981;
             color: white;
             border-radius: 6px;
@@ -278,14 +284,6 @@
                 <div class="kpi-value" id="kpiBreakeven">0</div>
                 <div class="kpi-subtext">billable users needed</div>
             </div>
-        </div>
-        
-        <!-- Breakeven Chart -->
-        <div class="chart-container">
-            <h2>Revenue vs Cost Analysis</h2>
-            <p class="chart-subtitle">Monthly recurring revenue and total costs by user count</p>
-            <canvas id="breakevenChart" height="80"></canvas>
-            <div id="breakevenMessage"></div>
         </div>
         
         <!-- Inputs Grid -->
@@ -443,6 +441,16 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Breakeven Chart (moved to end) -->
+        <div class="chart-container">
+            <h2>Revenue vs Cost Analysis</h2>
+            <p class="chart-subtitle">Monthly recurring revenue and total costs by user count</p>
+            <div class="chart-wrapper">
+                <canvas id="breakevenChart"></canvas>
+            </div>
+            <div id="breakevenMessage"></div>
+        </div>
     </div>
     
     <script>
@@ -596,7 +604,9 @@
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.3
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
                         },
                         {
                             label: 'Total Costs',
@@ -605,7 +615,9 @@
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.3
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
                         }
                     ]
                 },
