@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAS Connect - Financial Model</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            padding: 40px 20px;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            border-radius: 16px;
+            padding: 48px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            font-size: 48px;
+            color: white;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        
+        header p {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        
+        .kpi-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .kpi-label {
+            font-size: 13px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1;
+        }
+        
+        .kpi-card.positive .kpi-value {
+            color: #10b981;
+        }
+        
+        .kpi-card.negative .kpi-value {
+            color: #ef4444;
+        }
+        
+        .kpi-card.neutral .kpi-value {
+            color: #3b82f6;
+        }
+        
+        .kpi-subtext {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 8px;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .metric-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 40px;
+        }
+        
+        .chart-container h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        
+        .chart-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 32px;
+        }
+        
+        .info-banner {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+        
+        .breakeven-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 16px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 32px;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SAS Connect Financial Model</h1>
+            <p>Interactive unit economics and breakeven analysis</p>
+        </header>
+        
+        <!-- Key Metrics -->
+        <div class="kpi-grid">
+            <div class="kpi-card neutral">
+                <div class="kpi-label">Monthly Revenue</div>
+                <div class="kpi-value" id="kpiRevenue">$0</div>
+                <div class="kpi-subtext" id="kpiRevenuePerUser">$0 per billable user</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Monthly Costs</div>
+                <div class="kpi-value" id="kpiCosts">$0</div>
+                <div class="kpi-subtext" id="kpiCostPerUser">$0 per user (all)</div>
+            </div>
+            <div class="kpi-card" id="kpiProfitCard">
+                <div class="kpi-label">Net Profit</div>
+                <div class="kpi-value" id="kpiProfit">$0</div>
+                <div class="kpi-subtext" id="kpiMargin">0% margin</div>
+            </div>
+            <div class="kpi-card neutral">
+                <div class="kpi-label">Breakeven Point</div>
+                <div class="kpi-value" id="kpiBreakeven">0</div>
+                <div class="kpi-subtext">billable users needed</div>
+            </div>
+        </div>
+        
+        <!-- Breakeven Chart -->
+        <div class="chart-container">
+            <h2>Revenue vs Cost Analysis</h2>
+            <p class="chart-subtitle">Monthly recurring revenue and total costs by user count</p>
+            <canvas id="breakevenChart" height="80"></canvas>
+            <div id="breakevenMessage"></div>
+        </div>
+        
+        <!-- Inputs Grid -->
+        <div class="main-grid">
+            <!-- User Counts -->
+            <div class="card">
+                <h2>👥 User Counts</h2>
+                <div class="section-grid">
+                    <div class="input-group">
+                        <label>Admin Users (Billable)</label>
+                        <input type="number" id="adminCount" value="10" min="0" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Supervisor Users (Billable)</label>
+                        <input type="number" id="supervisorCount" value="50" min="0" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Users (Billable)</label>
+                        <input type="number" id="crewCount" value="200" min="0" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Non-Billable Users</label>
+                        <input type="number" id="nonBillableCount" value="0" min="0" oninput="calculate()">
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+                    <div class="metric-row">
+                        <span class="metric-label">Total Billable Users</span>
+                        <span class="metric-value" id="billableUsers">0</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Total Users (All)</span>
+                        <span class="metric-value" id="totalUsers">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pricing -->
+            <div class="card">
+                <h2>💰 Pricing per User/Month</h2>
+                <div class="section-grid">
+                    <div class="input-group">
+                        <label>Admin Price (AUD)</label>
+                        <input type="number" id="adminPrice" value="17" min="0" step="0.01" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Supervisor Price (AUD)</label>
+                        <input type="number" id="supervisorPrice" value="15" min="0" step="0.01" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Price (AUD)</label>
+                        <input type="number" id="crewPrice" value="8" min="0" step="0.01" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add-ons -->
+            <div class="card">
+                <h2>📊 Add-on Modules</h2>
+                <div class="section-grid">
+                    <div class="input-group">
+                        <label>Analytics Price (AUD)</label>
+                        <input type="number" id="analyticsPrice" value="129" min="0" step="0.01" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Analytics Conversion (%)</label>
+                        <input type="number" id="analyticsConversion" value="20" min="0" max="100" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Social Procurement Price (AUD)</label>
+                        <input type="number" id="socialPrice" value="59" min="0" step="0.01" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Social Procurement Conversion (%)</label>
+                        <input type="number" id="socialConversion" value="30" min="0" max="100" oninput="calculate()">
+                    </div>
+                </div>
+                <div class="info-banner">
+                    Add-on conversions apply to billable users only
+                </div>
+            </div>
+            
+            <!-- Costs -->
+            <div class="card">
+                <h2>💸 Monthly Costs</h2>
+                <div class="input-group">
+                    <label>Infrastructure (Azure, APIs, Auth0, SendGrid)</label>
+                    <input type="number" id="infrastructureCost" value="500" min="0" step="0.01" oninput="calculate()">
+                </div>
+                <div class="input-group">
+                    <label>Variable Cost per User (Email, OTP, Geo)</label>
+                    <input type="number" id="variableCostPerUser" value="0.5" min="0" step="0.01" oninput="calculate()">
+                </div>
+                <div class="input-group">
+                    <label>Salaries & Team</label>
+                    <input type="number" id="salaryCost" value="15000" min="0" step="0.01" oninput="calculate()">
+                </div>
+                <div class="input-group">
+                    <label>Marketing & Operations</label>
+                    <input type="number" id="marketingCost" value="3000" min="0" step="0.01" oninput="calculate()">
+                </div>
+                <div class="info-banner">
+                    Variable costs apply to all users including non-billable
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revenue Breakdown -->
+        <div class="main-grid">
+            <div class="card">
+                <h2>📈 Revenue Breakdown</h2>
+                <div class="metric-row">
+                    <span class="metric-label">Base Subscription Revenue</span>
+                    <span class="metric-value" id="baseRevenue">$0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Analytics Add-on Revenue</span>
+                    <span class="metric-value" id="analyticsRevenue">$0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Social Procurement Add-on Revenue</span>
+                    <span class="metric-value" id="socialRevenue">$0</span>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+                    <div class="metric-row">
+                        <span class="metric-label" style="font-size: 16px; color: #0f172a;">Total Monthly Revenue</span>
+                        <span class="metric-value" style="font-size: 24px; color: #3b82f6;" id="totalRevenue">$0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>💳 Cost Breakdown</h2>
+                <div class="metric-row">
+                    <span class="metric-label">Infrastructure (Fixed)</span>
+                    <span class="metric-value" id="totalInfra">$0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Variable Costs (All Users)</span>
+                    <span class="metric-value" id="totalVariable">$0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Salaries & Team (Fixed)</span>
+                    <span class="metric-value" id="totalSalary">$0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Marketing & Ops (Fixed)</span>
+                    <span class="metric-value" id="totalMarketing">$0</span>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+                    <div class="metric-row">
+                        <span class="metric-label" style="font-size: 16px; color: #0f172a;">Total Monthly Cost</span>
+                        <span class="metric-value" style="font-size: 24px;" id="totalCost">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let chart;
+        
+        function calculate() {
+            // Get user counts
+            const adminCount = parseInt(document.getElementById('adminCount').value) || 0;
+            const supervisorCount = parseInt(document.getElementById('supervisorCount').value) || 0;
+            const crewCount = parseInt(document.getElementById('crewCount').value) || 0;
+            const nonBillableCount = parseInt(document.getElementById('nonBillableCount').value) || 0;
+            const billableUsers = adminCount + supervisorCount + crewCount;
+            const totalUsers = billableUsers + nonBillableCount;
+            
+            // Get pricing
+            const adminPrice = parseFloat(document.getElementById('adminPrice').value) || 0;
+            const supervisorPrice = parseFloat(document.getElementById('supervisorPrice').value) || 0;
+            const crewPrice = parseFloat(document.getElementById('crewPrice').value) || 0;
+            
+            // Get add-ons
+            const analyticsPrice = parseFloat(document.getElementById('analyticsPrice').value) || 0;
+            const analyticsConversion = parseFloat(document.getElementById('analyticsConversion').value) || 0;
+            const socialPrice = parseFloat(document.getElementById('socialPrice').value) || 0;
+            const socialConversion = parseFloat(document.getElementById('socialConversion').value) || 0;
+            
+            // Get costs
+            const infrastructureCost = parseFloat(document.getElementById('infrastructureCost').value) || 0;
+            const variableCostPerUser = parseFloat(document.getElementById('variableCostPerUser').value) || 0;
+            const salaryCost = parseFloat(document.getElementById('salaryCost').value) || 0;
+            const marketingCost = parseFloat(document.getElementById('marketingCost').value) || 0;
+            
+            // Calculate revenue (only from billable users)
+            const baseRevenue = (adminCount * adminPrice) + (supervisorCount * supervisorPrice) + (crewCount * crewPrice);
+            const analyticsRevenue = billableUsers * (analyticsConversion / 100) * analyticsPrice;
+            const socialRevenue = billableUsers * (socialConversion / 100) * socialPrice;
+            const totalRevenue = baseRevenue + analyticsRevenue + socialRevenue;
+            
+            // Calculate costs (variable costs apply to ALL users)
+            const variableCosts = totalUsers * variableCostPerUser;
+            const fixedCosts = infrastructureCost + salaryCost + marketingCost;
+            const totalCost = fixedCosts + variableCosts;
+            
+            // Calculate profit
+            const netProfit = totalRevenue - totalCost;
+            const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue * 100) : 0;
+            const revenuePerUser = billableUsers > 0 ? totalRevenue / billableUsers : 0;
+            const costPerUser = totalUsers > 0 ? totalCost / totalUsers : 0;
+            
+            // Calculate breakeven
+            const revenuePerBillableUser = billableUsers > 0 ? totalRevenue / billableUsers : 0;
+            const breakevenUsers = revenuePerBillableUser > variableCostPerUser 
+                ? Math.ceil((fixedCosts + (nonBillableCount * variableCostPerUser)) / (revenuePerBillableUser - variableCostPerUser))
+                : 0;
+            
+            // Update KPIs
+            document.getElementById('kpiRevenue').textContent = '$' + totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('kpiRevenuePerUser').textContent = '$' + revenuePerUser.toFixed(2) + ' per billable user';
+            document.getElementById('kpiCosts').textContent = '$' + totalCost.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('kpiCostPerUser').textContent = '$' + costPerUser.toFixed(2) + ' per user (all)';
+            document.getElementById('kpiProfit').textContent = '$' + netProfit.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('kpiMargin').textContent = profitMargin.toFixed(1) + '% margin';
+            document.getElementById('kpiBreakeven').textContent = breakevenUsers.toLocaleString();
+            
+            // Update profit card color
+            const profitCard = document.getElementById('kpiProfitCard');
+            if (netProfit >= 0) {
+                profitCard.className = 'kpi-card positive';
+            } else {
+                profitCard.className = 'kpi-card negative';
+            }
+            
+            // Update user counts
+            document.getElementById('billableUsers').textContent = billableUsers.toLocaleString();
+            document.getElementById('totalUsers').textContent = totalUsers.toLocaleString();
+            
+            // Update revenue breakdown
+            document.getElementById('baseRevenue').textContent = '$' + baseRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('analyticsRevenue').textContent = '$' + analyticsRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('socialRevenue').textContent = '$' + socialRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            // Update cost breakdown
+            document.getElementById('totalInfra').textContent = '$' + infrastructureCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalVariable').textContent = '$' + variableCosts.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalSalary').textContent = '$' + salaryCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalMarketing').textContent = '$' + marketingCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalCost').textContent = '$' + totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            // Update chart
+            updateChart();
+        }
+        
+        function updateChart() {
+            const adminPrice = parseFloat(document.getElementById('adminPrice').value) || 0;
+            const supervisorPrice = parseFloat(document.getElementById('supervisorPrice').value) || 0;
+            const crewPrice = parseFloat(document.getElementById('crewPrice').value) || 0;
+            const analyticsPrice = parseFloat(document.getElementById('analyticsPrice').value) || 0;
+            const analyticsConversion = parseFloat(document.getElementById('analyticsConversion').value) || 0;
+            const socialPrice = parseFloat(document.getElementById('socialPrice').value) || 0;
+            const socialConversion = parseFloat(document.getElementById('socialConversion').value) || 0;
+            const infrastructureCost = parseFloat(document.getElementById('infrastructureCost').value) || 0;
+            const variableCostPerUser = parseFloat(document.getElementById('variableCostPerUser').value) || 0;
+            const salaryCost = parseFloat(document.getElementById('salaryCost').value) || 0;
+            const marketingCost = parseFloat(document.getElementById('marketingCost').value) || 0;
+            const nonBillableCount = parseInt(document.getElementById('nonBillableCount').value) || 0;
+            
+            const userScales = [];
+            const revenues = [];
+            const costs = [];
+            let breakevenPoint = null;
+            
+            // Calculate for different scales (0 to 1500 users)
+            for (let billableUsers = 0; billableUsers <= 1500; billableUsers += 50) {
+                const admin = Math.floor(billableUsers * 0.10);
+                const supervisor = Math.floor(billableUsers * 0.20);
+                const crew = billableUsers - admin - supervisor;
+                
+                const totalUsersForCost = billableUsers + nonBillableCount;
+                
+                const baseRev = (admin * adminPrice) + (supervisor * supervisorPrice) + (crew * crewPrice);
+                const analyticsRev = billableUsers * (analyticsConversion / 100) * analyticsPrice;
+                const socialRev = billableUsers * (socialConversion / 100) * socialPrice;
+                const revenue = baseRev + analyticsRev + socialRev;
+                
+                const cost = infrastructureCost + (totalUsersForCost * variableCostPerUser) + salaryCost + marketingCost;
+                
+                userScales.push(billableUsers);
+                revenues.push(revenue);
+                costs.push(cost);
+                
+                // Find breakeven point
+                if (breakevenPoint === null && revenue >= cost && billableUsers > 0) {
+                    breakevenPoint = billableUsers;
+                }
+            }
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            const ctx = document.getElementById('breakevenChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: userScales,
+                    datasets: [
+                        {
+                            label: 'Revenue',
+                            data: revenues,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Total Costs',
+                            data: costs,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: 20,
+                                usePointStyle: true,
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label + ' billable users';
+                                },
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Billable Users',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: 16
+                            },
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Monthly (AUD)',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: 16
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update breakeven message
+            const messageDiv = document.getElementById('breakevenMessage');
+            if (breakevenPoint) {
+                messageDiv.innerHTML = `<div class="breakeven-indicator">Breakeven at ${breakevenPoint} billable users</div>`;
+            } else {
+                messageDiv.innerHTML = '';
+            }
+        }
+        
+        // Initialize
+        calculate();
+    </script>
+</body>
+</html>
