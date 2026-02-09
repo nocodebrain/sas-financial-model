@@ -285,6 +285,11 @@
                 <div class="kpi-subtext">billable users needed</div>
             </div>
             <div class="kpi-card neutral">
+                <div class="kpi-label">Revenue per User</div>
+                <div class="kpi-value" id="kpiRevenuePerUserMain">$0</div>
+                <div class="kpi-subtext">per billable user</div>
+            </div>
+            <div class="kpi-card neutral">
                 <div class="kpi-label">Cost per User</div>
                 <div class="kpi-value" id="kpiCostPerUserMain">$0</div>
                 <div class="kpi-subtext">across all users</div>
@@ -519,6 +524,7 @@
             document.getElementById('kpiProfit').textContent = '$' + netProfit.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
             document.getElementById('kpiMargin').textContent = profitMargin.toFixed(1) + '% margin';
             document.getElementById('kpiBreakeven').textContent = breakevenUsers.toLocaleString();
+            document.getElementById('kpiRevenuePerUserMain').textContent = '$' + revenuePerUser.toFixed(2);
             document.getElementById('kpiCostPerUserMain').textContent = '$' + costPerUser.toFixed(2);
             
             // Update profit card color
