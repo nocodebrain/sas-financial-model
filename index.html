@@ -362,7 +362,7 @@
                     </div>
                 </div>
                 <div class="info-banner">
-                    Add-on conversions apply to billable users only
+                    Add-on conversions apply to Admin and Supervisor users only (not Crew)
                 </div>
             </div>
             
@@ -482,10 +482,11 @@
             const salaryCost = parseFloat(document.getElementById('salaryCost').value) || 0;
             const marketingCost = parseFloat(document.getElementById('marketingCost').value) || 0;
             
-            // Calculate revenue (only from billable users)
+            // Calculate revenue (base from all billable, add-ons only from Admin + Supervisor)
             const baseRevenue = (adminCount * adminPrice) + (supervisorCount * supervisorPrice) + (crewCount * crewPrice);
-            const analyticsRevenue = billableUsers * (analyticsConversion / 100) * analyticsPrice;
-            const socialRevenue = billableUsers * (socialConversion / 100) * socialPrice;
+            const eligibleForAddons = adminCount + supervisorCount; // Only Admins + Supervisors
+            const analyticsRevenue = eligibleForAddons * (analyticsConversion / 100) * analyticsPrice;
+            const socialRevenue = eligibleForAddons * (socialConversion / 100) * socialPrice;
             const totalRevenue = baseRevenue + analyticsRevenue + socialRevenue;
             
             // Calculate costs (variable costs apply to ALL users)
@@ -569,10 +570,11 @@
                 const crew = billableUsers - admin - supervisor;
                 
                 const totalUsersForCost = billableUsers + nonBillableCount;
+                const eligibleForAddons = admin + supervisor; // Only Admins + Supervisors
                 
                 const baseRev = (admin * adminPrice) + (supervisor * supervisorPrice) + (crew * crewPrice);
-                const analyticsRev = billableUsers * (analyticsConversion / 100) * analyticsPrice;
-                const socialRev = billableUsers * (socialConversion / 100) * socialPrice;
+                const analyticsRev = eligibleForAddons * (analyticsConversion / 100) * analyticsPrice;
+                const socialRev = eligibleForAddons * (socialConversion / 100) * socialPrice;
                 const revenue = baseRev + analyticsRev + socialRev;
                 
                 const cost = infrastructureCost + (totalUsersForCost * variableCostPerUser) + salaryCost + marketingCost;
